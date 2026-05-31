@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rumbo $20K — Trader OS X</title>
+<style>
+:root{
+  --bg:#07111f;--bg2:#0b1220;--panel:#111c2e;--panel2:#16233a;--panel3:#0f172a;
+  --line:rgba(148,163,184,.18);--line2:rgba(148,163,184,.32);
+  --text:#e5e7eb;--soft:#cbd5e1;--muted:#94a3b8;--dim:#64748b;
+  --green:#22c55e;--green2:#16a34a;--red:#ef4444;--red2:#dc2626;
+  --yellow:#f59e0b;--blue:#38bdf8;--purple:#a78bfa;--pink:#fb7185;
+  --r:18px;--shadow:0 20px 50px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(56,189,248,.18),transparent 28%),
+    radial-gradient(circle at 100% 0%,rgba(34,197,94,.14),transparent 32%),
+    linear-gradient(180deg,#07111f,#050816 70%);
+  min-height:100vh;
+}
+button,input,select,textarea{font-family:inherit}
+button{-webkit-tap-highlight-color:transparent}
+.top{
+  position:sticky;top:0;z-index:60;padding:14px 18px;background:rgba(5,10,22,.88);
+  backdrop-filter:blur(16px);border-bottom:1px solid var(--line);display:flex;align-items:center;
+  justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:46px;height:46px;border-radius:16px;display:grid;place-items:center;font-weight:950;color:#03131e;
+  background:linear-gradient(135deg,var(--green),var(--blue));box-shadow:0 12px 25px rgba(34,197,94,.18)
+}
+h1{font-size:18px;margin:0;letter-spacing:-.03em}.sub{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
+.topRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.quote{font-size:13px;color:#bbf7d0;max-width:460px;text-align:right;font-weight:700}
+.syncPill{font-size:10px;font-weight:900;border:1px solid var(--line);padding:7px 10px;border-radius:999px;color:var(--muted);background:rgba(15,23,42,.65)}
+.tabs{
+  position:sticky;top:75px;z-index:55;display:flex;gap:8px;overflow:auto;padding:11px 18px;
+  background:rgba(7,17,31,.78);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  border:1px solid var(--line);background:rgba(30,41,59,.72);color:var(--muted);padding:10px 13px;border-radius:999px;
+  font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer
+}
+.tab.active{background:linear-gradient(135deg,#14532d,#0e7490);color:white;border-color:rgba(34,197,94,.55)}
+.wrap{max-width:1260px;margin:0 auto;padding:18px}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-7{grid-column:span 7}.col-8{grid-column:span 8}.col-9{grid-column:span 9}.col-12{grid-column:span 12}
+@media(max-width:940px){.col-3,.col-4,.col-5,.col-6,.col-7,.col-8,.col-9{grid-column:span 12}.quote{text-align:left}.tabs{top:98px}.topRight{justify-content:flex-start}}
+.card{
+  background:linear-gradient(180deg,rgba(17,28,46,.97),rgba(12,20,34,.97));border:1px solid var(--line);
+  border-radius:var(--r);padding:16px;box-shadow:var(--shadow)
+}
+.card h2{font-size:12px;margin:0 0 12px;color:var(--soft);letter-spacing:.12em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.big{font-size:36px;font-weight:950;letter-spacing:-.055em;line-height:.95}.med{font-size:23px;font-weight:950;letter-spacing:-.03em}.small{font-size:12px;color:var(--muted);line-height:1.65}.tiny{font-size:10px;color:var(--dim);line-height:1.6}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:680px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:rgba(15,23,42,.72);border:1px solid var(--line);border-radius:15px;padding:12px;min-height:76px}
+.kpi label{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-weight:900}.kpi b{font-size:20px}.kpi .hint{font-size:10px;color:var(--dim);margin-top:4px}
+.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}.blue{color:var(--blue)}.purple{color:var(--purple)}.muted{color:var(--muted)}
+.progress{height:12px;background:#050b16;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));width:0%;transition:.35s}.fill.redBg{background:linear-gradient(90deg,var(--red),var(--pink))}.fill.yellowBg{background:linear-gradient(90deg,var(--yellow),#f97316)}
+.ring{width:124px;height:124px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) 0deg,#0f172a 0deg);border:1px solid var(--line)}
+.ringInner{width:88px;height:88px;background:#0b1220;border-radius:50%;display:grid;place-items:center;text-align:center;border:1px solid var(--line)}
+.btn{border:0;border-radius:13px;padding:12px 14px;font-size:13px;font-weight:950;cursor:pointer;color:#06111e;transition:.16s;user-select:none}
+.btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.btn-green{background:var(--green)}.btn-red{background:var(--red);color:white}.btn-blue{background:var(--blue)}.btn-yellow{background:var(--yellow)}.btn-purple{background:var(--purple)}.btn-ghost{background:rgba(30,41,59,.8);color:var(--text);border:1px solid var(--line2)}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.stack{display:grid;gap:10px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:680px){.two,.three{grid-template-columns:1fr}}
+input,select,textarea{width:100%;background:#08111f;border:1px solid var(--line2);border-radius:13px;color:var(--text);padding:11px;outline:none;font-size:13px}
+input:focus,select:focus,textarea:focus{border-color:rgba(56,189,248,.7);box-shadow:0 0 0 3px rgba(56,189,248,.08)}
+textarea{resize:vertical;min-height:96px}label{font-size:10px;color:var(--muted);font-weight:950;text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px;display:block}
+.tableWrap{overflow:auto;border-radius:15px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:820px}th,td{padding:10px;border-bottom:1px solid rgba(148,163,184,.1);text-align:left;vertical-align:top}th{color:var(--muted);background:rgba(5,11,22,.75);font-size:10px;text-transform:uppercase;letter-spacing:.08em}tr:last-child td{border-bottom:none}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:950;white-space:nowrap}
+.pill.green{background:rgba(34,197,94,.14);color:#86efac}.pill.red{background:rgba(239,68,68,.14);color:#fca5a5}.pill.yellow{background:rgba(245,158,11,.14);color:#fcd34d}.pill.blue{background:rgba(56,189,248,.14);color:#7dd3fc}.pill.purple{background:rgba(167,139,250,.14);color:#ddd6fe}.pill.gray{background:rgba(148,163,184,.12);color:#cbd5e1}
+.coach{border-radius:17px;padding:16px;background:linear-gradient(135deg,rgba(20,83,45,.45),rgba(14,116,144,.28));border:1px solid rgba(34,197,94,.24);font-size:17px;font-weight:900;line-height:1.35}
+.box{border-radius:15px;padding:12px;border:1px solid var(--line);background:rgba(15,23,42,.62);color:var(--soft);font-size:13px;line-height:1.55}
+.warningBox{border-color:rgba(245,158,11,.28);background:rgba(245,158,11,.1);color:#fde68a}.dangerBox{border-color:rgba(239,68,68,.28);background:rgba(239,68,68,.1);color:#fecaca}.okBox{border-color:rgba(34,197,94,.26);background:rgba(34,197,94,.1);color:#bbf7d0}.blueBox{border-color:rgba(56,189,248,.28);background:rgba(56,189,248,.1);color:#bae6fd}
+.overlay{position:fixed;inset:0;background:rgba(2,6,23,.88);z-index:110;display:none;align-items:center;justify-content:center;padding:18px}
+.modal{max-width:560px;width:100%;background:#0d1628;border:1px solid var(--line2);border-radius:24px;padding:24px;box-shadow:var(--shadow);text-align:center}.modal h3{font-size:28px;margin:0 0 8px;letter-spacing:-.04em}.modal p{color:var(--soft);line-height:1.65}.timer{font-size:58px;font-weight:950;color:var(--yellow);letter-spacing:-.05em}
+.checkItem,.choiceBtn,.errorBtn,.tagBtn{padding:11px;border-radius:13px;background:#08111f;border:1px solid var(--line);cursor:pointer;color:var(--soft);font-size:13px;text-align:left}
+.checkItem.done{border-color:rgba(34,197,94,.55);background:rgba(34,197,94,.1);color:#bbf7d0}
+.choiceBtn.sel,.errorBtn.sel,.tagBtn.sel{border-color:rgba(56,189,248,.65);background:rgba(56,189,248,.12);color:#bae6fd}
+.errorBtn.bad.sel{border-color:rgba(239,68,68,.65);background:rgba(239,68,68,.12);color:#fecaca}
+.floating{position:fixed;right:16px;bottom:16px;z-index:70;display:grid;gap:8px}
+.panicBtn{background:linear-gradient(135deg,#ef4444,#7f1d1d);color:#fff;border:2px solid rgba(255,255,255,.16);box-shadow:0 15px 35px rgba(239,68,68,.25);border-radius:999px;padding:14px 17px;font-size:12px;font-weight:950;cursor:pointer}
+.lockBtn{background:linear-gradient(135deg,#f59e0b,#92400e);color:#fff;border:2px solid rgba(255,255,255,.16);box-shadow:0 15px 35px rgba(245,158,11,.18);border-radius:999px;padding:12px 15px;font-size:12px;font-weight:950;cursor:pointer}
+.badgeLine{display:flex;gap:8px;flex-wrap:wrap}.miniBars{display:grid;gap:9px}.miniRow{display:grid;grid-template-columns:120px 1fr 66px;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.auditList{display:grid;gap:8px}.auditItem{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px;border-radius:13px;background:rgba(15,23,42,.58);border:1px solid var(--line);font-size:12px}.auditItem.good{color:#bbf7d0}.auditItem.bad{color:#fecaca}.auditItem.warn{color:#fde68a}
+.canvasBox{height:220px;background:rgba(8,17,31,.55);border:1px solid var(--line);border-radius:15px;padding:10px}
+canvas{width:100%;height:100%}
+@media(max-width:500px){.big{font-size:31px}.floating{right:10px;bottom:10px}.panicBtn,.lockBtn{padding:11px 12px;font-size:10px}.miniRow{grid-template-columns:92px 1fr 52px}.tabs{top:115px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand"><div class="logo">X</div><div><h1>RUMBO $20K — TRADER OS X</h1><div class="sub">Risk Engine · Psicología · Diario · Auditoría · Simulador</div></div></div>
+  <div class="topRight"><div class="quote" id="topQuote">Tu trabajo es ejecutar, no adivinar.</div><div class="syncPill" id="saveState">Guardado local</div></div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="dash">🏠 Dashboard</button>
+  <button class="tab" data-tab="session">⚡ Sesión</button>
+  <button class="tab" data-tab="journal">🧠 Diario</button>
+  <button class="tab" data-tab="analytics">📊 Analytics</button>
+  <button class="tab" data-tab="sim">🧪 Simulador</button>
+  <button class="tab" data-tab="settings">⚙️ Configuración</button>
+</div>
+
+<div class="wrap">
+
+<section id="dash" class="panel active">
+  <div class="grid">
+    <div class="col-8 card">
+      <h2>Capital y progreso <span class="pill blue" id="rankPill">Recluta</span></h2>
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <div>
+          <div class="big" id="capitalLbl">$400.00</div>
+          <div class="small">Meta principal: <b id="mainGoalLbl">$20,000</b> · Falta: <span id="faltanteLbl">$19,600.00</span> · Progreso: <span id="goalPctLbl">2.00%</span></div>
+        </div>
+        <div class="ring" id="goalRing"><div class="ringInner"><div><b id="ringPct">2%</b><div class="tiny">Meta</div></div></div></div>
+      </div>
+      <div class="progress" style="margin-top:12px;height:16px"><div class="fill" id="capitalBar"></div></div>
+      <div class="badgeLine" style="margin-top:12px" id="milestones"></div>
+    </div>
+    <div class="col-4 card">
+      <h2>Trader ID <span class="pill green" id="gradePill">A+</span></h2>
+      <div class="kpis" style="grid-template-columns:1fr 1fr">
+        <div class="kpi"><label>Disciplina</label><b id="disciplineLbl">100</b><div class="hint">conducta actual</div></div>
+        <div class="kpi"><label>Riesgo mental</label><b id="mentalRiskLbl">Bajo</b><div class="hint" id="mentalHint">estable</div></div>
+        <div class="kpi"><label>Racha W</label><b id="streakLbl">0</b><div class="hint">sesión activa</div></div>
+        <div class="kpi"><label>Sesiones</label><b id="sessionCountLbl">0</b><div class="hint">guardadas</div></div>
+      </div>
+    </div>
+    <div class="col-5 card">
+      <h2>Coach interno</h2>
+      <div class="coach" id="coachBox">La disciplina es interés compuesto psicológico.</div>
+      <div class="small" style="margin-top:10px">El sistema nunca promete ganancias. Su trabajo es proteger decisiones, capital y conducta.</div>
+    </div>
+    <div class="col-7 card">
+      <h2>Resumen histórico</h2>
+      <div class="kpis">
+        <div class="kpi"><label>P&L total</label><b id="histPnlLbl">$0.00</b></div>
+        <div class="kpi"><label>Win rate</label><b id="histWinrateLbl">—</b></div>
+        <div class="kpi"><label>Limpias</label><b id="cleanRateLbl">—</b></div>
+        <div class="kpi"><label>Error común</label><b id="commonErrorLbl">—</b></div>
+      </div>
+    </div>
+    <div class="col-7 card">
+      <h2>Curva de capital</h2>
+      <div class="canvasBox"><canvas id="equityCanvas"></canvas></div>
+    </div>
+    <div class="col-5 card">
+      <h2>Auditoría viva</h2>
+      <div id="liveAudit" class="auditList"></div>
+    </div>
+    <div class="col-12 card">
+      <h2>Últimas sesiones</h2>
+      <div class="tableWrap"><table><thead><tr><th>Fecha</th><th>Inicio</th><th>Final</th><th>P&L</th><th>%</th><th>W/L</th><th>Ánimo</th><th>Disciplina</th><th>Resultado</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<section id="session" class="panel">
+  <div class="grid">
+    <div class="col-4 card">
+      <h2>Objetivo de hoy <span class="pill green" id="modePill">7W acumuladas</span></h2>
+      <div class="big" id="targetMoneyLbl">$18.00</div>
+      <div class="small">Meta sesión: <span id="targetPctLbl">4.50%</span> del capital inicial. Objetivo operativo: completar W acumuladas sin violar reglas.</div>
+      <div class="progress" style="margin:12px 0"><div class="fill" id="sessionBar"></div></div>
+      <div class="kpis" style="grid-template-columns:1fr 1fr">
+        <div class="kpi"><label>P&L sesión</label><b id="sessionPnlLbl">$0.00</b></div>
+        <div class="kpi"><label>Completado</label><b id="completedLbl">0%</b></div>
+        <div class="kpi"><label>W</label><b id="winsLbl">0/7</b></div>
+        <div class="kpi"><label>L</label><b id="lossesLbl">0</b></div>
+      </div>
+    </div>
+    <div class="col-4 card">
+      <h2>Próxima operación <span class="pill blue" id="stakeQuality">Normal</span></h2>
+      <div class="small">Motor: faltante ÷ W restantes ÷ payout. Luego aplica límite máximo por operación y reglas de bloqueo.</div>
+      <div class="big green" id="nextStakeLbl">$3.03</div>
+      <div class="small">Payout: <span id="payoutLbl">85%</span> · W restantes: <span id="winsLeftLbl">7</span> · Riesgo por op: <span id="riskOpLbl">—</span></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn btn-green" id="btnWin">✅ WIN</button>
+        <button class="btn btn-red" id="btnLoss">❌ LOSS</button>
+        <button class="btn btn-ghost" id="btnUndo">↩ Deshacer</button>
+      </div>
+    </div>
+    <div class="col-4 card">
+      <h2>Estado psicológico</h2>
+      <div id="psyState" class="okBox">✅ En control. Opera solo setups claros.</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-yellow" id="btnCloseSession">🏁 Cerrar sesión</button>
+        <button class="btn btn-ghost" id="btnResetSession">🔄 Reset</button>
+        <button class="btn btn-blue" id="btnBreath">🫁 Pausa 60s</button>
+      </div>
+    </div>
+    <div class="col-7 card">
+      <h2>Registro de operaciones</h2>
+      <div class="tableWrap"><table><thead><tr><th>#</th><th>Resultado</th><th>Entrada</th><th>Retorno</th><th>P&L acumulado</th><th>% objetivo</th><th>Razón</th><th>Nota</th></tr></thead><tbody id="opsBody"></tbody></table></div>
+    </div>
+    <div class="col-5 card">
+      <h2>Checklist previo <span class="pill gray" id="checkCount">0/8</span></h2>
+      <div class="stack" id="checklistBox"></div>
+    </div>
+    <div class="col-12 card">
+      <h2>Plan de defensa</h2>
+      <div class="three">
+        <div class="box okBox"><b>Objetivo alcanzado:</b><br>la app bloquea operaciones. Guardar sesión.</div>
+        <div class="box warningBox"><b>Zona 80%:</b><br>aparece alerta anti‑codicia antes de continuar.</div>
+        <div class="box dangerBox"><b>2 pérdidas seguidas:</b><br>stop duro. Enfriamiento + cierre.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="journal" class="panel">
+  <div class="grid">
+    <div class="col-6 card">
+      <h2>Cierre de sesión</h2>
+      <div class="two">
+        <div><label>Ánimo principal</label><select id="mood"><option>Enfocado</option><option>Neutro</option><option>Ansioso</option><option>Eufórico</option><option>Cansado</option><option>Frustrado</option><option>Aburrido</option></select></div>
+        <div><label>Horario</label><select id="timeBlock"><option>Apertura</option><option>Media sesión</option><option>Cierre</option><option>Mixto</option></select></div>
+      </div>
+      <div class="two">
+        <div><label>Calidad del mercado</label><select id="marketQuality"><option>Limpio</option><option>Normal</option><option>Lateral</option><option>Volátil</option><option>Confuso</option></select></div>
+        <div><label>Resultado emocional</label><select id="emotionResult"><option>Controlado</option><option>Impulsivo</option><option>Dudoso</option><option>Ansioso</option><option>Excelente control</option></select></div>
+      </div>
+      <label>Setup principal</label><input id="setupName" placeholder="Ej: EMA 50 + pullback">
+      <label>Notas / aprendizaje</label><textarea id="notes" placeholder="Condiciones del mercado, aprendizajes, errores, emociones..."></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-green" id="saveSessionBtn">💾 Guardar sesión</button>
+        <button class="btn btn-blue" id="exportJsonBtn">⬇ Backup JSON</button>
+        <button class="btn btn-purple" id="exportCsvBtn">📊 Exportar CSV</button>
+      </div>
+    </div>
+    <div class="col-6 card">
+      <h2>Errores / conducta</h2>
+      <div class="two" id="errorsBox"></div>
+      <div class="box blueBox" style="margin-top:10px" id="journalPreview">Vista previa de disciplina: 100/100</div>
+    </div>
+    <div class="col-12 card">
+      <h2>Historial completo</h2>
+      <div class="tableWrap"><table><thead><tr><th>Fecha</th><th>Capital inicial</th><th>Capital final</th><th>P&L</th><th>Ops</th><th>W</th><th>L</th><th>Ánimo</th><th>Errores</th><th>Disciplina</th></tr></thead><tbody id="histBody"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<section id="analytics" class="panel">
+  <div class="grid">
+    <div class="col-6 card"><h2>Insights</h2><div class="stack" id="insightsBox"></div></div>
+    <div class="col-6 card"><h2>Disciplina histórica</h2><div class="canvasBox"><canvas id="disciplineCanvas"></canvas></div></div>
+    <div class="col-6 card"><h2>Emoción vs resultado</h2><div class="miniBars" id="moodStats"></div></div>
+    <div class="col-6 card"><h2>Horario vs resultado</h2><div class="miniBars" id="timeStats"></div></div>
+    <div class="col-6 card"><h2>Setup vs P&L</h2><div class="miniBars" id="setupStats"></div></div>
+    <div class="col-6 card"><h2>Errores frecuentes</h2><div class="miniBars" id="errorStats"></div></div>
+  </div>
+</section>
+
+<section id="sim" class="panel">
+  <div class="grid">
+    <div class="col-5 card">
+      <h2>Simulador del motor</h2>
+      <div class="two">
+        <div><label>Capital simulado</label><input id="simCapital" type="number" value="400" step="0.01"></div>
+        <div><label>Meta %</label><input id="simTargetPct" type="number" value="4.5" step="0.1"></div>
+        <div><label>Payout %</label><input id="simPayout" type="number" value="85" step="1"></div>
+        <div><label>Wins objetivo</label><input id="simWins" type="number" value="7" step="1"></div>
+      </div>
+      <label>Secuencia W/L</label>
+      <input id="simSeq" value="W W L W W L W W W" placeholder="Ej: W W L W L W W W">
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-blue" id="runSimBtn">Ejecutar simulación</button>
+        <button class="btn btn-ghost" id="randomSimBtn">Aleatoria 40%</button>
+      </div>
+      <div class="box warningBox" style="margin-top:10px">Importante: ningún sistema es infalible. Este simulador muestra exposición, stops y resultado de secuencias.</div>
+    </div>
+    <div class="col-7 card">
+      <h2>Resultado de simulación</h2>
+      <div id="simSummary" class="box blueBox">Ejecuta una simulación.</div>
+      <div class="tableWrap" style="margin-top:10px"><table><thead><tr><th>#</th><th>R</th><th>Stake</th><th>Retorno</th><th>P&L</th><th>Estado</th></tr></thead><tbody id="simBody"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<section id="settings" class="panel">
+  <div class="grid">
+    <div class="col-6 card">
+      <h2>Configuración</h2>
+      <div class="two">
+        <div><label>Capital actual</label><input id="cfgCapital" type="number" step="0.01"></div>
+        <div><label>Meta principal</label><input id="cfgGoal" type="number" step="1"></div>
+        <div><label>Meta diaria %</label><input id="cfgTargetPct" type="number" step="0.1"></div>
+        <div><label>Payout %</label><input id="cfgPayout" type="number" step="1"></div>
+        <div><label>Wins objetivo</label><input id="cfgTargetWins" type="number" step="1"></div>
+        <div><label>Máx. operaciones</label><input id="cfgMaxOps" type="number" step="1"></div>
+        <div><label>Máx. stake % capital</label><input id="cfgMaxStakePct" type="number" step="0.1"></div>
+        <div><label>Cooldown pérdida (seg)</label><input id="cfgCooldown" type="number" step="5"></div>
+      </div>
+      <div class="row" style="margin-top:12px"><button class="btn btn-green" id="saveCfgBtn">Guardar configuración</button><button class="btn btn-red" id="clearDataBtn">Borrar todo</button></div>
+    </div>
+    <div class="col-6 card">
+      <h2>Importar respaldo</h2>
+      <label>Pega JSON de backup</label><textarea id="importJson"></textarea>
+      <button class="btn btn-blue" id="importBtn">Importar</button>
+      <div class="box blueBox" style="margin-top:10px">Todo se guarda en localStorage del navegador. Haz backups si cambias de teléfono o limpias Safari/Chrome.</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="floating">
+  <button class="lockBtn" id="disciplineLockBtn">🔒 Bloqueo 10m</button>
+  <button class="panicBtn" id="panicBtn">🚨 NO ESTOY EN CONTROL</button>
+</div>
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+const LS='trader_os_x_v2';
+const QUOTES=[
+ 'Tu trabajo es ejecutar, no adivinar.',
+ 'No necesitas esta operación.',
+ 'La paciencia también es una posición.',
+ 'Una pérdida correcta vale más que una ganancia impulsiva.',
+ 'El mercado seguirá aquí mañana.',
+ 'La disciplina es interés compuesto psicológico.',
+ 'Cobra cuando el mercado te pague. No fuerces.',
+ 'Evalúa ejecución, no dinero.',
+ 'Protege capital primero.',
+ 'Si dudas, no entres.',
+ 'La cuenta crece cuando el ego se queda fuera.',
+ 'Una sesión cerrada en disciplina es una victoria.'
+];
+const CHECKS=[
+ 'Payout mínimo confirmado',
+ 'Setup claro y visible',
+ 'Tendencia / contexto validado',
+ 'No estoy operando por emoción',
+ 'Acepto perder esta operación',
+ 'Si gano, no aumentaré riesgo',
+ 'Si pierdo, no perseguiré dinero',
+ 'Balance oculto / foco en ejecución'
+];
+const ERRORS=[
+ 'Payout bajo','Sin setup claro','Entré tarde','Revenge trading','Ignoré estructura',
+ 'Cambié el plan','Mercado lateral','Operé cansado','Sobreoperé','Continué en objetivo',
+ 'No esperé confirmación','Aumenté monto impulsivamente'
+];
+let state={
+ cfg:{capital:400,goal:20000,targetPct:4.5,payout:85,targetWins:7,maxOps:10,maxStakePct:3.5,cooldownSec:30},
+ session:{startCapital:400,ops:[],pnl:0,wins:0,losses:0,streakW:0,streakL:0,peakCompletion:0,closed:false,panic:false,startedAt:Date.now(),checklist:{},errors:[],closeReason:'',lockedUntil:0},
+ history:[]
+};
+let cooldownUntil=0, qPending=null, lastQuoteAt=0;
+
+function $(id){return document.getElementById(id)}
+function money(n){return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function pct(n){return Number(n||0).toFixed(2)+'%'}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function save(){localStorage.setItem(LS,JSON.stringify(state));$('saveState').textContent='Guardado '+new Date().toLocaleTimeString()}
+function load(){try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){state={...state,...s};state.cfg={...{capital:400,goal:20000,targetPct:4.5,payout:85,targetWins:7,maxOps:10,maxStakePct:3.5,cooldownSec:30},...(s.cfg||{})};state.session={...state.session,...(s.session||{})};}}catch(e){console.warn(e)}}
+function targetMoney(){return state.session.startCapital*(state.cfg.targetPct/100)}
+function completion(){return targetMoney()>0?clamp(state.session.pnl/targetMoney()*100,0,100):0}
+function winsLeft(){return Math.max(state.cfg.targetWins-state.session.wins,0)}
+function nextStake(){
+  if(state.session.closed) return 0;
+  const remaining=Math.max(targetMoney()-state.session.pnl,0);
+  const wl=Math.max(winsLeft(),1);
+  const raw=remaining/(wl*(state.cfg.payout/100));
+  const maxStake=Math.max(state.session.startCapital*(state.cfg.maxStakePct/100),1);
+  const minStake=Math.min(1,state.session.startCapital*.005);
+  return Math.max(minStake,Math.min(raw,maxStake));
+}
+function riskPerOp(){return state.session.startCapital?nextStake()/state.session.startCapital*100:0}
+function rank(cap){if(cap>=20000)return'Objetivo Alcanzado';if(cap>=10000)return'Trader Profesional';if(cap>=5000)return'Gestor de Riesgo';if(cap>=2500)return'Protector de Capital';if(cap>=1000)return'Operador Consistente';return'Recluta'}
+function grade(score){if(score>=95)return'A+';if(score>=88)return'A';if(score>=78)return'B';if(score>=65)return'C';return'D'}
+function selectedJournalErrors(){return [...document.querySelectorAll('.errorBtn.sel')].map(b=>b.dataset.err)}
+function sessionDiscipline(extraErrors=[]){
+  let score=100;
+  const errs=[...(state.session.errors||[]),...extraErrors];
+  const checks=Object.values(state.session.checklist||{}).filter(Boolean).length;
+  score-=errs.length*7;
+  if(checks===CHECKS.length) score+=8; else score-=Math.max(0, CHECKS.length-checks)*2;
+  if(state.session.pnl>=targetMoney()) score+=7;
+  if(completion()>=80 && state.session.closed) score+=4;
+  if(state.session.panic) score-=22;
+  if(state.session.ops.length>state.cfg.maxOps) score-=12;
+  if(state.session.streakL>=2) score-=5;
+  if(riskPerOp()>state.cfg.maxStakePct*.95) score-=4;
+  return clamp(Math.round(score),0,100);
+}
+function mentalRisk(){
+  let points=0, reasons=[];
+  if(state.session.panic){points+=5;reasons.push('botón rojo')}
+  if(state.session.streakL>=1){points+=2;reasons.push('pérdida reciente')}
+  if(state.session.streakW>=3){points+=2;reasons.push('euforia posible')}
+  if(completion()>=80 && !state.session.closed){points+=3;reasons.push('zona codicia')}
+  if(state.session.ops.length>=state.cfg.maxOps){points+=3;reasons.push('fatiga')}
+  if(sessionDiscipline()<75){points+=3;reasons.push('disciplina baja')}
+  return points>=6?['Alto',reasons.join(', ')||'riesgo elevado']:points>=3?['Medio',reasons.join(', ')||'precaución']:['Bajo','estable'];
+}
+function setQuote(force=false){
+  if(!force && Date.now()-lastQuoteAt<12000) return;
+  $('topQuote').textContent=QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  lastQuoteAt=Date.now();
+}
+function showModal(html){$('modal').innerHTML=html;$('overlay').style.display='flex'}
+function closeModal(){$('overlay').style.display='none';$('modal').innerHTML=''}
+function showTab(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));render()}
+function cooldown(sec=state.cfg.cooldownSec,msg='No recuperes dinero. Ejecuta ventaja. Busca una razón para NO entrar.'){
+  cooldownUntil=Date.now()+sec*1000; tickCooldown(msg);
+}
+function tickCooldown(msg){
+  const left=Math.ceil((cooldownUntil-Date.now())/1000);
+  if(left<=0){closeModal();render();return}
+  showModal(`<h3>🧊 Enfriamiento</h3><div class="timer">${left}</div><p>${msg}</p>`);
+  setTimeout(()=>tickCooldown(msg),1000);
+}
+function breath60(){cooldown(60,'Respira. Mira el gráfico sin tocar nada. La urgencia no es señal de oportunidad.')}
+function preTradeQuestion(type){
+  const qs=[
+    '¿Entrarías si esta fuera la primera operación del día?',
+    '¿Estás siguiendo tu setup o persiguiendo dinero?',
+    'Si esta operación pierde, ¿seguirás tranquilo?',
+    '¿Ves ventaja estadística o esperanza?',
+    '¿La tomarías con una cuenta de $20,000?',
+    '¿Tu razón de entrada cabe en una frase clara?'
+  ];
+  qPending=type;
+  const q=qs[Math.floor(Math.random()*qs.length)];
+  showModal(`<h3>🧠 Pausa profesional</h3><p style="font-size:20px;color:#e5e7eb"><b>${q}</b></p><p>Responder “Sí” confirma que estás actuando desde el plan.</p><div class="row" style="justify-content:center"><button class="btn btn-green" onclick="confirmTrade()">Sí, estoy en control</button><button class="btn btn-red" onclick="rejectTrade()">No / tengo duda</button></div>`);
+}
+function confirmTrade(){const t=qPending;qPending=null;closeModal();doTrade(t)}
+function rejectTrade(){qPending=null;state.session.errors.push('Duda antes de entrar');save();showModal(`<h3>✅ Buena decisión</h3><p>No operar también es operar. Espera una entrada clara.</p><button class="btn btn-blue" onclick="closeModal();render()">Volver</button>`)}
+function trade(type){
+  if(Date.now()<state.session.lockedUntil){showModal(`<h3>🔒 Bloqueo activo</h3><p>Tiempo restante: ${Math.ceil((state.session.lockedUntil-Date.now())/60000)} min. Protegiste tu cuenta de una decisión emocional.</p><button class="btn btn-blue" onclick="closeModal()">Entiendo</button>`);return}
+  if(Date.now()<cooldownUntil){tickCooldown('Aún estás en enfriamiento. No apresures la próxima decisión.');return}
+  if(state.session.closed)return;
+  if(type==='W' && completion()>=80 && completion()<100){
+    showModal(`<h3>⚠️ Alerta anti‑codicia</h3><p>Ya tienes ${pct(completion())} del objetivo. ¿Quieres ganar más o conservar lo ganado?</p><div class="row" style="justify-content:center"><button class="btn btn-green" onclick="closeModal();closeSession('cerró en zona de protección')">Cerrar sesión</button><button class="btn btn-yellow" onclick="state.session.errors.push('Continuó en zona de codicia');save();closeModal();preTradeQuestion('${type}')">Continuar bajo responsabilidad</button></div>`);
+    return;
+  }
+  preTradeQuestion(type);
+}
+function doTrade(type){
+  const stake=nextStake();
+  let ret=0,note='';
+  if(type==='W'){ret=stake*(state.cfg.payout/100);state.session.wins++;state.session.streakW++;state.session.streakL=0;note='Ejecución correcta'}
+  else{ret=-stake;state.session.losses++;state.session.streakL++;state.session.streakW=0;note='Enfriamiento activado'}
+  state.session.pnl+=ret;
+  state.session.peakCompletion=Math.max(state.session.peakCompletion,completion());
+  state.session.ops.push({n:state.session.ops.length+1,type,stake,ret,pnl:state.session.pnl,completion:completion(),ts:new Date().toLocaleTimeString(),reason:'Confirmado por pausa profesional',note});
+  if(type==='L') cooldown();
+  if(state.session.streakW>=3 && !state.session.closed) showModal(`<h3>🔥 Alerta de euforia</h3><p>3 ganancias seguidas no significan que el mercado te debe más. Mantén el mismo tamaño y el mismo plan.</p><button class="btn btn-blue" onclick="closeModal()">Entiendo</button>`);
+  if(state.session.streakL>=2){state.session.closed=true;state.session.closeReason='stop por 2 pérdidas';showModal(`<h3>🛑 Stop duro</h3><p>Dos pérdidas seguidas. Cierra. Evalúa. Mañana vuelve el mercado.</p><button class="btn btn-red" onclick="closeModal();showTab('journal')">Ir al diario</button>`)}
+  if(state.session.pnl>=targetMoney()){state.session.closed=true;state.session.closeReason='objetivo alcanzado';showModal(`<h3>🎯 Objetivo alcanzado</h3><p>Ya estás en el objetivo. Deja de operar. La sesión terminó profesionalmente.</p><button class="btn btn-green" onclick="closeModal();showTab('journal')">Guardar sesión</button>`)}
+  if(state.session.ops.length>=state.cfg.maxOps && !state.session.closed) state.session.errors.push('Sobreoperó');
+  save();render();
+}
+function undo(){
+  const ops=state.session.ops;if(!ops.length)return;
+  ops.pop(); rebuildSessionCounters(); save();render();
+}
+function rebuildSessionCounters(){
+  const s=state.session; const manual=s.closeReason && !['objetivo alcanzado','stop por 2 pérdidas'].includes(s.closeReason);
+  s.wins=0;s.losses=0;s.streakW=0;s.streakL=0;s.peakCompletion=0;s.pnl=0;
+  s.ops.forEach(o=>{s.pnl+=o.ret;if(o.type==='W'){s.wins++;s.streakW++;s.streakL=0}else{s.losses++;s.streakL++;s.streakW=0}s.peakCompletion=Math.max(s.peakCompletion,completion())});
+  if(!manual && !s.panic){s.closed=s.pnl>=targetMoney()||s.streakL>=2;s.closeReason=s.pnl>=targetMoney()?'objetivo alcanzado':s.streakL>=2?'stop por 2 pérdidas':''}
+}
+function closeSession(reason='manual'){state.session.closed=true;state.session.closeReason=reason;save();render();showTab('journal')}
+function newSession(){
+  if(!confirm('¿Resetear sesión activa?'))return;
+  state.session={startCapital:state.cfg.capital,ops:[],pnl:0,wins:0,losses:0,streakW:0,streakL:0,peakCompletion:0,closed:false,panic:false,startedAt:Date.now(),checklist:{},errors:[],closeReason:'',lockedUntil:0};
+  save();render();setQuote(true)
+}
+function panic(){
+  state.session.panic=true;state.session.closed=true;state.session.errors.push('Botón rojo');
+  save();render();
+  showModal(`<h3>🚨 Operaciones bloqueadas</h3><p>Esto fue una acción profesional. Identifica la emoción y guarda la sesión.</p><div class="row" style="justify-content:center"><button class="btn btn-yellow" onclick="closeModal();showTab('journal')">Ir al diario</button></div>`);
+}
+function disciplineLock(){
+  state.session.lockedUntil=Date.now()+10*60*1000;
+  state.session.errors.push('Bloqueo voluntario');
+  save();render();
+  showModal(`<h3>🔒 Bloqueo de disciplina</h3><p>Operaciones bloqueadas por 10 minutos. Esto protege la cuenta cuando aparece impulso.</p><button class="btn btn-blue" onclick="closeModal()">Entiendo</button>`);
+}
+function toggleCheck(i){state.session.checklist[i]=!state.session.checklist[i];save();render()}
+function saveSession(){
+  const extra=selectedJournalErrors();
+  const score=sessionDiscipline(extra);
+  const entry={
+    id:Date.now(),date:new Date().toLocaleString(),start:state.session.startCapital,end:state.session.startCapital+state.session.pnl,
+    pnl:state.session.pnl,pct:state.session.startCapital?state.session.pnl/state.session.startCapital*100:0,ops:state.session.ops.length,
+    wins:state.session.wins,losses:state.session.losses,mood:$('mood').value,timeBlock:$('timeBlock').value,marketQuality:$('marketQuality').value,
+    emotionResult:$('emotionResult').value,setup:$('setupName').value.trim()||'Sin etiquetar',notes:$('notes').value,
+    errors:[...(state.session.errors||[]),...extra],discipline:score,clean:score>=88 && extra.length===0 && !state.session.panic && state.session.ops.length<=state.cfg.maxOps,
+    closeReason:state.session.closeReason||'manual',opsDetail:state.session.ops
+  };
+  state.history.push(entry); state.cfg.capital=entry.end;
+  state.session={startCapital:state.cfg.capital,ops:[],pnl:0,wins:0,losses:0,streakW:0,streakL:0,peakCompletion:0,closed:false,panic:false,startedAt:Date.now(),checklist:{},errors:[],closeReason:'',lockedUntil:0};
+  $('notes').value='';$('setupName').value='';document.querySelectorAll('.errorBtn').forEach(b=>b.classList.remove('sel'));
+  save();render();showTab('dash');alert('Sesión guardada. Capital actualizado: '+money(state.cfg.capital));
+}
+function commonError(){const c={};state.history.forEach(h=>(h.errors||[]).forEach(e=>c[e]=(c[e]||0)+1));return Object.keys(c).sort((a,b)=>c[b]-c[a])[0]||'—'}
+function statGroup(key){const g={};state.history.forEach(h=>{const k=h[key]||'—';if(!g[k])g[k]={n:0,pnl:0,disc:0};g[k].n++;g[k].pnl+=h.pnl;g[k].disc+=h.discipline||0});return g}
+function renderMini(id,g){const vals=Object.entries(g);$(id).innerHTML=vals.length?vals.map(([k,v])=>{const max=Math.max(...vals.map(x=>Math.abs(x[1].pnl)),1);const w=Math.min(100,Math.abs(v.pnl)/max*100);return `<div class="miniRow"><span title="${k}">${k}</span><div class="progress"><div class="fill ${v.pnl<0?'redBg':''}" style="width:${w}%"></div></div><b class="${v.pnl>=0?'green':'red'}">${money(v.pnl)}</b></div>`}).join(''):'<div class="small">Sin datos suficientes.</div>'}
+function liveAuditItems(){
+  const checks=Object.values(state.session.checklist||{}).filter(Boolean).length;
+  const items=[];
+  items.push([checks===CHECKS.length?'good':'warn',`Checklist`,`${checks}/${CHECKS.length}`]);
+  items.push([riskPerOp()<=state.cfg.maxStakePct?'good':'bad',`Riesgo por operación`,pct(riskPerOp())]);
+  items.push([state.session.ops.length<=state.cfg.maxOps?'good':'warn',`Operaciones`,`${state.session.ops.length}/${state.cfg.maxOps}`]);
+  items.push([completion()<80||state.session.closed?'good':'warn',`Zona codicia`,completion()>=80&&!state.session.closed?'Activa':'OK']);
+  items.push([state.session.streakL<2?'good':'bad',`Pérdidas consecutivas`,state.session.streakL]);
+  return items;
+}
+function renderAudit(){ $('liveAudit').innerHTML=liveAuditItems().map(([cls,a,b])=>`<div class="auditItem ${cls}"><span>${a}</span><b>${b}</b></div>`).join('') }
+function drawChart(canvasId, values, color='#22c55e', minZero=false){
+  const c=$(canvasId); if(!c) return; const dpr=window.devicePixelRatio||1; const rect=c.getBoundingClientRect();
+  c.width=rect.width*dpr; c.height=rect.height*dpr; const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,rect.width,rect.height); ctx.strokeStyle='rgba(148,163,184,.15)'; ctx.lineWidth=1;
+  for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(0,rect.height*i/4);ctx.lineTo(rect.width,rect.height*i/4);ctx.stroke();}
+  if(values.length<2){ctx.fillStyle='rgba(203,213,225,.65)';ctx.font='13px system-ui';ctx.fillText('Sin datos suficientes',12,28);return;}
+  const min=minZero?0:Math.min(...values), max=Math.max(...values); const range=max-min||1;
+  ctx.beginPath();ctx.lineWidth=3;ctx.strokeStyle=color;
+  values.forEach((v,i)=>{const x=i/(values.length-1)*rect.width;const y=rect.height-((v-min)/range*rect.height*.82+rect.height*.09); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y)});
+  ctx.stroke();
+}
+function renderCharts(){
+  let eq=[state.history.length?state.history[0].start:state.cfg.capital]; state.history.forEach(h=>eq.push(h.end));
+  drawChart('equityCanvas',eq,'#22c55e',false);
+  drawChart('disciplineCanvas',state.history.map(h=>h.discipline||0),'#38bdf8',true);
+}
+function renderStats(){
+  renderMini('moodStats',statGroup('mood'));renderMini('timeStats',statGroup('timeBlock'));renderMini('setupStats',statGroup('setup'));
+  const eg={};state.history.forEach(h=>(h.errors||[]).forEach(e=>{if(!eg[e])eg[e]={n:0,pnl:0};eg[e].n++;eg[e].pnl+=h.pnl}));renderMini('errorStats',eg);
+  const insights=[];
+  if(state.history.length<5) insights.push('Guarda al menos 5 sesiones para empezar a detectar patrones confiables.');
+  if(commonError()!=='—') insights.push('Error más repetido: '+commonError()+'. Diseña una regla específica para eliminarlo.');
+  const bestMood=Object.entries(statGroup('mood')).sort((a,b)=>b[1].pnl-a[1].pnl)[0]; if(bestMood) insights.push('Mejor ánimo histórico: '+bestMood[0]+' con '+money(bestMood[1].pnl)+'.');
+  const bestTime=Object.entries(statGroup('timeBlock')).sort((a,b)=>b[1].pnl-a[1].pnl)[0]; if(bestTime) insights.push('Horario más rentable: '+bestTime[0]+'.');
+  const bestSetup=Object.entries(statGroup('setup')).filter(x=>x[0]&&x[0]!=='—').sort((a,b)=>b[1].pnl-a[1].pnl)[0]; if(bestSetup) insights.push('Setup estrella: '+bestSetup[0]+' generó '+money(bestSetup[1].pnl)+'.');
+  const avgDisc=state.history.length?state.history.reduce((a,h)=>a+(h.discipline||0),0)/state.history.length:0; if(avgDisc) insights.push('Disciplina promedio: '+Math.round(avgDisc)+'/100. '+(avgDisc>=85?'Excelente base de consistencia.':'El foco debe ser proceso antes que dinero.'));
+  $('insightsBox').innerHTML=insights.map(x=>`<div class="okBox box">${x}</div>`).join('');
+}
+function render(){
+  setQuote();
+  const cap=state.cfg.capital, goal=state.cfg.goal, capPct=goal?cap/goal*100:0, disc=sessionDiscipline(), mr=mentalRisk();
+  $('capitalLbl').textContent=money(cap);$('mainGoalLbl').textContent=money(goal);$('faltanteLbl').textContent=money(Math.max(goal-cap,0));$('goalPctLbl').textContent=pct(capPct);$('ringPct').textContent=Math.round(capPct)+'%';
+  $('goalRing').style.background=`conic-gradient(var(--green) ${Math.min(capPct,100)*3.6}deg,#0f172a 0deg)`;
+  $('capitalBar').style.width=Math.min(capPct,100)+'%';$('rankPill').textContent=rank(cap);$('sessionCountLbl').textContent=state.history.length;$('streakLbl').textContent=state.session.streakW;$('disciplineLbl').textContent=disc;$('gradePill').textContent=grade(disc);
+  $('mentalRiskLbl').textContent=mr[0];$('mentalRiskLbl').className=mr[0]==='Alto'?'red':mr[0]==='Medio'?'yellow':'green';$('mentalHint').textContent=mr[1];
+  $('milestones').innerHTML=[400,1000,2500,5000,10000,20000].map(m=>`<span class="pill ${cap>=m?'green':'blue'}">${money(m)}</span>`).join('');
+  $('targetMoneyLbl').textContent=money(targetMoney());$('targetPctLbl').textContent=pct(state.cfg.targetPct);$('sessionPnlLbl').textContent=money(state.session.pnl);$('completedLbl').textContent=pct(completion());$('sessionBar').style.width=completion()+'%';
+  $('winsLbl').textContent=state.session.wins+'/'+state.cfg.targetWins;$('lossesLbl').textContent=state.session.losses;$('nextStakeLbl').textContent=money(nextStake());$('payoutLbl').textContent=state.cfg.payout+'%';$('winsLeftLbl').textContent=winsLeft();$('riskOpLbl').textContent=pct(riskPerOp());
+  $('stakeQuality').textContent=riskPerOp()>state.cfg.maxStakePct*.9?'Protegido':'Normal';$('stakeQuality').className='pill '+(riskPerOp()>state.cfg.maxStakePct*.9?'yellow':'blue');
+  const psy=$('psyState');
+  if(state.session.closed){psy.className='dangerBox box';psy.textContent='⛔ Sesión cerrada. No sigas operando.'}
+  else if(Date.now()<state.session.lockedUntil){psy.className='dangerBox box';psy.textContent='🔒 Bloqueo voluntario activo. Protege la cuenta.'}
+  else if(completion()>=80){psy.className='warningBox box';psy.textContent='⚠️ Zona de codicia. Proteger es más profesional que demostrar.'}
+  else if(state.session.streakL>0){psy.className='warningBox box';psy.textContent='🧊 Pérdida reciente. No busques recuperar.'}
+  else{psy.className='okBox box';psy.textContent='✅ En control. Opera solo setups claros.'}
+  $('coachBox').textContent=state.session.closed?'La sesión terminó. El resultado ya no importa. Evalúa ejecución.':completion()>=80?'Ya ganaste trabajo del día. ¿Vale la pena arriesgarlo?':QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  const checks=Object.values(state.session.checklist||{}).filter(Boolean).length;$('checkCount').textContent=checks+'/'+CHECKS.length;
+  $('checklistBox').innerHTML=CHECKS.map((c,i)=>`<div class="checkItem ${state.session.checklist[i]?'done':''}" onclick="toggleCheck(${i})">${state.session.checklist[i]?'✅':'⬜'} ${c}</div>`).join('');
+  $('errorsBox').innerHTML=ERRORS.map(e=>`<button class="errorBtn bad" data-err="${e}" onclick="this.classList.toggle('sel');updateJournalPreview()">${e}</button>`).join('');
+  $('journalPreview').textContent='Vista previa de disciplina: '+sessionDiscipline(selectedJournalErrors())+'/100';
+  $('opsBody').innerHTML=state.session.ops.map(o=>`<tr><td>${o.n}</td><td><span class="pill ${o.type==='W'?'green':'red'}">${o.type}</span></td><td>${money(o.stake)}</td><td class="${o.ret>=0?'green':'red'}">${money(o.ret)}</td><td>${money(o.pnl)}</td><td>${pct(o.completion||0)}</td><td>${o.reason||'—'}</td><td>${o.note||'—'}</td></tr>`).join('')||`<tr><td colspan="8" class="small">Sin operaciones registradas.</td></tr>`;
+  $('histBody').innerHTML=state.history.slice().reverse().map(h=>`<tr><td>${h.date}</td><td>${money(h.start)}</td><td>${money(h.end)}</td><td class="${h.pnl>=0?'green':'red'}">${money(h.pnl)}</td><td>${h.ops}</td><td>${h.wins}</td><td>${h.losses}</td><td>${h.mood}</td><td>${(h.errors||[]).join(', ')||'—'}</td><td>${h.discipline}</td></tr>`).join('')||`<tr><td colspan="10" class="small">Aún no hay sesiones guardadas.</td></tr>`;
+  $('recentBody').innerHTML=state.history.slice(-8).reverse().map(h=>`<tr><td>${h.date}</td><td>${money(h.start)}</td><td>${money(h.end)}</td><td class="${h.pnl>=0?'green':'red'}">${money(h.pnl)}</td><td>${pct(h.pct)}</td><td>${h.wins}/${h.losses}</td><td>${h.mood}</td><td>${h.discipline}</td><td>${h.clean?'Limpia':'Revisar'}</td></tr>`).join('')||`<tr><td colspan="9" class="small">Sin sesiones.</td></tr>`;
+  const pnl=state.history.reduce((a,h)=>a+h.pnl,0), totalW=state.history.reduce((a,h)=>a+h.wins,0), totalOps=state.history.reduce((a,h)=>a+h.ops,0), clean=state.history.filter(h=>h.clean).length;
+  $('histPnlLbl').textContent=money(pnl);$('histWinrateLbl').textContent=totalOps?pct(totalW/totalOps*100):'—';$('cleanRateLbl').textContent=state.history.length?pct(clean/state.history.length*100):'—';$('commonErrorLbl').textContent=commonError();
+  ['cfgCapital','cfgGoal','cfgTargetPct','cfgPayout','cfgTargetWins','cfgMaxOps','cfgMaxStakePct','cfgCooldown'].forEach(id=>{});
+  $('cfgCapital').value=state.cfg.capital;$('cfgGoal').value=state.cfg.goal;$('cfgTargetPct').value=state.cfg.targetPct;$('cfgPayout').value=state.cfg.payout;$('cfgTargetWins').value=state.cfg.targetWins;$('cfgMaxOps').value=state.cfg.maxOps;$('cfgMaxStakePct').value=state.cfg.maxStakePct;$('cfgCooldown').value=state.cfg.cooldownSec;
+  $('btnWin').disabled=state.session.closed;$('btnLoss').disabled=state.session.closed;
+  renderAudit();renderStats();setTimeout(renderCharts,30);
+}
+function updateJournalPreview(){$('journalPreview').textContent='Vista previa de disciplina: '+sessionDiscipline(selectedJournalErrors())+'/100'}
+function exportData(type){
+  if(type==='json'){download('trader-os-x-backup.json',JSON.stringify(state,null,2),'application/json');return}
+  const rows=[['Fecha','Inicio','Final','PnL','Pct','Ops','Wins','Losses','Mood','Horario','Mercado','Setup','Errores','Disciplina','Notas'],...state.history.map(h=>[h.date,h.start,h.end,h.pnl,h.pct,h.ops,h.wins,h.losses,h.mood,h.timeBlock,h.marketQuality,h.setup,(h.errors||[]).join('|'),h.discipline,(h.notes||'').replace(/\n/g,' ')])];
+  download('trader-os-x-sesiones.csv',rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\n'),'text/csv');
+}
+function download(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function runSim(seq=null){
+  const cap=parseFloat($('simCapital').value)||400, targetPct=parseFloat($('simTargetPct').value)||4.5, payout=(parseFloat($('simPayout').value)||85)/100, tw=parseInt($('simWins').value)||7;
+  const arr=(seq||$('simSeq').value).toUpperCase().split(/[\s,;-]+/).filter(x=>x==='W'||x==='L');
+  let pnl=0,w=0,l=0,streakL=0,closed=false, reason='Activa', rows=[], target=cap*targetPct/100;
+  for(let i=0;i<arr.length;i++){
+    if(closed) break;
+    const winsLeft=Math.max(tw-w,1), remaining=Math.max(target-pnl,0), stake=Math.min(Math.max(remaining/(winsLeft*payout),1),cap*.035);
+    let ret=arr[i]==='W'?stake*payout:-stake; pnl+=ret;
+    if(arr[i]==='W'){w++;streakL=0}else{l++;streakL++}
+    if(streakL>=2){closed=true;reason='Stop 2L'} if(pnl>=target){closed=true;reason='Objetivo'} 
+    rows.push({i:i+1,r:arr[i],stake,ret,pnl,status:reason});
+  }
+  $('simSummary').innerHTML=`Capital: <b>${money(cap)}</b> · Objetivo: <b>${money(target)}</b> · Resultado: <b class="${pnl>=0?'green':'red'}">${money(pnl)}</b> · W/L: <b>${w}/${l}</b> · Estado: <b>${reason}</b>`;
+  $('simBody').innerHTML=rows.map(o=>`<tr><td>${o.i}</td><td><span class="pill ${o.r==='W'?'green':'red'}">${o.r}</span></td><td>${money(o.stake)}</td><td class="${o.ret>=0?'green':'red'}">${money(o.ret)}</td><td>${money(o.pnl)}</td><td>${o.status}</td></tr>`).join('');
+}
+function randomSim(){
+  let arr=[];for(let i=0;i<16;i++)arr.push(Math.random()<.4?'W':'L');$('simSeq').value=arr.join(' ');runSim();
+}
+$('tabs').onclick=e=>{if(e.target.dataset.tab)showTab(e.target.dataset.tab)}
+$('btnWin').onclick=()=>trade('W');$('btnLoss').onclick=()=>trade('L');$('btnUndo').onclick=undo;$('btnCloseSession').onclick=()=>closeSession();$('btnResetSession').onclick=newSession;$('btnBreath').onclick=breath60;$('saveSessionBtn').onclick=saveSession;$('panicBtn').onclick=panic;$('disciplineLockBtn').onclick=disciplineLock;
+$('exportJsonBtn').onclick=()=>exportData('json');$('exportCsvBtn').onclick=()=>exportData('csv');$('runSimBtn').onclick=()=>runSim();$('randomSimBtn').onclick=randomSim;
+$('saveCfgBtn').onclick=()=>{state.cfg.capital=parseFloat($('cfgCapital').value)||400;state.cfg.goal=parseFloat($('cfgGoal').value)||20000;state.cfg.targetPct=parseFloat($('cfgTargetPct').value)||4.5;state.cfg.payout=parseFloat($('cfgPayout').value)||85;state.cfg.targetWins=parseInt($('cfgTargetWins').value)||7;state.cfg.maxOps=parseInt($('cfgMaxOps').value)||10;state.cfg.maxStakePct=parseFloat($('cfgMaxStakePct').value)||3.5;state.cfg.cooldownSec=parseInt($('cfgCooldown').value)||30;if(!state.session.ops.length)state.session.startCapital=state.cfg.capital;save();render();alert('Configuración guardada')};
+$('clearDataBtn').onclick=()=>{if(confirm('¿Borrar todo el historial y configuración?')){localStorage.removeItem(LS);location.reload()}};
+$('importBtn').onclick=()=>{try{state=JSON.parse($('importJson').value);save();render();alert('Importado correctamente')}catch(e){alert('JSON inválido')}};
+window.addEventListener('resize',()=>setTimeout(renderCharts,100));
+load();setQuote(true);render();runSim();
+</script>
+</body>
+</html>
